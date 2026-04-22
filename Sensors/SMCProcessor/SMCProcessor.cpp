@@ -165,6 +165,13 @@ void SMCProcessor::updateCounters(uint32_t cpu) {
 				getBitField<uint32_t>(static_cast<uint32_t>(msr), 22, 16);
 		}
 
+		// Temperature per uncore (iGPU)
+		if ((counters.eventFlags & Counters::ThermalUncore) &&
+			((msr = rdmsr64(MSR_IA32_PP1_THERM_STATUS)) & 0x80000000)) {
+			counters.thermalStatusUncore[package] =
+				getBitField<uint32_t>(static_cast<uint32_t>(msr), 22, 16);
+		}
+
 		// Energy counters
 		for (size_t i = 0; i < Counters::EnergyTotal; i++) {
 			if (counters.eventFlags & Counters::energyFlags(i)) {
@@ -232,6 +239,12 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 	if (CPUInfo::getCpuid(6, 0, &val) && (val & getBit<uint32_t>(6)))
 		counters.eventFlags |= Counters::ThermalPackage;
 
+	// MSR_IA32_PP1_THERM_STATUS (iGPU) availability is not directly in CPUID,
+	// but it is usually available if PP1 energy status is available.
+	uint64_t msr;
+	if (readMsr(MSR_IA32_PP1_THERM_STATUS, msr) && (msr & 0x80000000))
+		counters.eventFlags |= Counters::ThermalUncore;
+
 	// Great Intel has no way to determine whether RAPL is available, so all the projects
 	// hardcode it based on cpu identification. Assume it will not be removed in the future.
 	if (cpuGeneration >= CPUInfo::CpuGeneration::SandyBridge) {
@@ -242,7 +255,6 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 		if (counters.energyUnits[0] > 0) {
 			// Linux kernel checks the availability of RAPL msrs by reading them and comparing to zero.
 			// Assume they are available on any core and cpu package if at all.
-			uint64_t msr;
 			if (readMsr(MSR_PKG_ENERGY_STATUS, msr))
 				counters.eventFlags |= Counters::PowerTotal;
 			if (readMsr(MSR_PP0_ENERGY_STATUS, msr))
@@ -254,7 +266,6 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 		}
 
 		// Also called MSR_IA32_PERF_STS, but the format we rely on refers to MSR_PERF_STATUS.
-		uint64_t msr;
 		if (readMsr(MSR_PERF_STATUS, msr))
 			counters.eventFlags |= Counters::Voltage;
 	}
@@ -317,6 +328,15 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 			VirtualSMCAPI::addKey(KeyTC0J(pkg), vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78));
 			VirtualSMCAPI::addKey(KeyTC0P(pkg), vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempPackage(this, pkg)));
 			VirtualSMCAPI::addKey(KeyTC0p(pkg), vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempPackage(this, pkg)));
+		}
+
+		if (pkg == 0) {
+			if (counters.eventFlags & Counters::ThermalUncore)
+				VirtualSMCAPI::addKey(KeyTCGC, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempUncore(this, pkg)));
+			else if (counters.eventFlags & Counters::ThermalPackage)
+				VirtualSMCAPI::addKey(KeyTCGC, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempPackage(this, pkg)));
+			else
+				VirtualSMCAPI::addKey(KeyTCGC, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78));
 		}
 
 		if (counters.eventFlags & Counters::Voltage)

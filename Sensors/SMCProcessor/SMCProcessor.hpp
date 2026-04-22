@@ -43,6 +43,7 @@ class EXPORT SMCProcessor : public IOService {
 	static constexpr uint32_t MSR_TEMPERATURE_TARGET = 0x1A2;
 	static constexpr uint32_t MSR_PERF_STATUS = 0x198;
 	static constexpr uint32_t MSR_IA32_THERM_STATUS = 0x19C;
+	static constexpr uint32_t MSR_IA32_PP1_THERM_STATUS = 0x644;
 	static constexpr uint32_t MSR_RAPL_POWER_UNIT = 0x606;
 	static constexpr uint32_t MSR_PKG_ENERGY_STATUS = 0x611;
 	static constexpr uint32_t MSR_DRAM_ENERGY_STATUS = 0x619;
@@ -80,6 +81,7 @@ class EXPORT SMCProcessor : public IOService {
 	static constexpr SMC_KEY KeyTC0G(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'G'); }
 	static constexpr SMC_KEY KeyTC0J(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'J'); }
 	static constexpr SMC_KEY KeyTC0H(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'H'); }
+	static constexpr SMC_KEY KeyTCGC = SMC_MAKE_IDENTIFIER('T','C','G','C');
 	static constexpr SMC_KEY KeyTC0P(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'P'); }
 	static constexpr SMC_KEY KeyTC0p(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'p'); }
 	static constexpr SMC_KEY KeyVC0C(size_t i) { return SMC_MAKE_IDENTIFIER('V','C',KeyIndexes[i],'C'); }
@@ -94,12 +96,13 @@ class EXPORT SMCProcessor : public IOService {
 		enum EventFlags {
 			ThermalCore              = 1U << 0U,
 			ThermalPackage           = 1U << 1U,
-			PowerTotal               = 1U << 2U,
-			PowerCores               = 1U << 3U,
-			PowerUncore              = 1U << 4U,
-			PowerDram                = 1U << 5U,
+			ThermalUncore            = 1U << 2U,
+			PowerTotal               = 1U << 3U,
+			PowerCores               = 1U << 4U,
+			PowerUncore              = 1U << 5U,
+			PowerDram                = 1U << 6U,
 			PowerAny                 = PowerTotal | PowerCores | PowerUncore | PowerDram,
-			Voltage                  = 1U << 6U
+			Voltage                  = 1U << 7U
 		};
 
 		/**
@@ -124,6 +127,11 @@ class EXPORT SMCProcessor : public IOService {
 		 *  For ThermalPackage
 		 */
 		uint8_t thermalStatusPackage[CPUInfo::MaxCpus] {};
+
+		/**
+		 *  For ThermalUncore
+		 */
+		uint8_t thermalStatusUncore[CPUInfo::MaxCpus] {};
 
 		/**
 		 *  Maximum temperature per package before trottling according to DTS

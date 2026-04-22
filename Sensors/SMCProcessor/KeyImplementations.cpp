@@ -26,6 +26,15 @@ SMC_RESULT TempCore::readAccess() {
 	return SmcSuccess;
 }
 
+SMC_RESULT TempUncore::readAccess() {
+	uint16_t *ptr = reinterpret_cast<uint16_t *>(data);
+	IOSimpleLockLock(cp->counterLock);
+	*ptr = VirtualSMCAPI::encodeIntSp(type, cp->counters.tjmax[package] - cp->counters.thermalStatusUncore[package]);
+	cp->quickReschedule();
+	IOSimpleLockUnlock(cp->counterLock);
+	return SmcSuccess;
+}
+
 SMC_RESULT VoltagePackage::readAccess() {
 	uint16_t *ptr = reinterpret_cast<uint16_t *>(data);
 	IOSimpleLockLock(cp->counterLock);
