@@ -70,8 +70,11 @@ class EXPORT SMCProcessor : public IOService {
 	static constexpr SMC_KEY KeyPCGM = SMC_MAKE_IDENTIFIER('P','C','G','M');
 	static constexpr SMC_KEY KeyPCPC = SMC_MAKE_IDENTIFIER('P','C','P','C');
 	static constexpr SMC_KEY KeyPCPG = SMC_MAKE_IDENTIFIER('P','C','P','G');
+	static constexpr SMC_KEY KeyPCP0 = SMC_MAKE_IDENTIFIER('P','C','P','0');
+	static constexpr SMC_KEY KeyPCPG = SMC_MAKE_IDENTIFIER('P','C','P','G');
 	static constexpr SMC_KEY KeyPCPR = SMC_MAKE_IDENTIFIER('P','C','P','R');
 	static constexpr SMC_KEY KeyPCPT = SMC_MAKE_IDENTIFIER('P','C','P','T');
+	static constexpr SMC_KEY KeyPSTR = SMC_MAKE_IDENTIFIER('P','S','T','R');
 	static constexpr SMC_KEY KeyPCTR = SMC_MAKE_IDENTIFIER('P','C','T','R');
 	static constexpr SMC_KEY KeyTC0C(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'C'); }
 	static constexpr SMC_KEY KeyTC0c(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'c'); }
@@ -82,6 +85,7 @@ class EXPORT SMCProcessor : public IOService {
 	static constexpr SMC_KEY KeyTC0J(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'J'); }
 	static constexpr SMC_KEY KeyTC0H(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'H'); }
 	static constexpr SMC_KEY KeyTCGC = SMC_MAKE_IDENTIFIER('T','C','G','C');
+	static constexpr SMC_KEY KeyTCMX = SMC_MAKE_IDENTIFIER('T','C','M','X');
 	static constexpr SMC_KEY KeyTC0P(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'P'); }
 	static constexpr SMC_KEY KeyTC0p(size_t i) { return SMC_MAKE_IDENTIFIER('T','C',KeyIndexes[i],'p'); }
 	static constexpr SMC_KEY KeyVC0C(size_t i) { return SMC_MAKE_IDENTIFIER('V','C',KeyIndexes[i],'C'); }

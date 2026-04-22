@@ -25,6 +25,7 @@ public:
 class TempPackage    : public CpIdxKey { using CpIdxKey::CpIdxKey; protected: SMC_RESULT readAccess() override; };
 class TempCore       : public CpIdxKey { using CpIdxKey::CpIdxKey; protected: SMC_RESULT readAccess() override; };
 class TempUncore     : public CpIdxKey { using CpIdxKey::CpIdxKey; protected: SMC_RESULT readAccess() override; };
+class TempMax        : public CpIdxKey { using CpIdxKey::CpIdxKey; protected: SMC_RESULT readAccess() override; };
 class VoltagePackage : public CpIdxKey { using CpIdxKey::CpIdxKey; protected: SMC_RESULT readAccess() override; };
 
 class CpEnergyKey : public VirtualSMCValue {

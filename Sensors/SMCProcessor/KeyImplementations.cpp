@@ -35,6 +35,20 @@ SMC_RESULT TempUncore::readAccess() {
 	return SmcSuccess;
 }
 
+SMC_RESULT TempMax::readAccess() {
+	uint16_t *ptr = reinterpret_cast<uint16_t *>(data);
+	IOSimpleLockLock(cp->counterLock);
+	uint8_t maxVal = cp->counters.thermalStatusPackage[package];
+	for (size_t i = 0; i < cp->cpuTopology.totalPhysical(); i++) {
+		if (cp->cpuTopology.numberToPackage[i] == package)
+			maxVal = min(maxVal, cp->counters.thermalStatus[i]);
+	}
+	*ptr = VirtualSMCAPI::encodeIntSp(type, cp->counters.tjmax[package] - maxVal);
+	cp->quickReschedule();
+	IOSimpleLockUnlock(cp->counterLock);
+	return SmcSuccess;
+}
+
 SMC_RESULT VoltagePackage::readAccess() {
 	uint16_t *ptr = reinterpret_cast<uint16_t *>(data);
 	IOSimpleLockLock(cp->counterLock);

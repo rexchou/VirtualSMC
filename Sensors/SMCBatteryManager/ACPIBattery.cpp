@@ -163,12 +163,25 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 
 	bi.validateData(id);
 
-	if (!extended) {
-		// Assume battery designed for 1000 cycles
-		if (bi.designCapacity && bi.state.lastFullChargeCapacity)
-			bi.cycle = (bi.designCapacity - bi.state.lastFullChargeCapacity) * 1000 / bi.designCapacity;
-		else
-			bi.cycle = 0;
+	// Enhanced cycle count detection: Try to find the real hardware cycle count value
+	uint32_t cycleCount = BatteryInfo::ValueUnknown;
+	if (device->evaluateInteger("BCC", &cycleCount) == kIOReturnSuccess ||
+		device->evaluateInteger("BCNT", &cycleCount) == kIOReturnSuccess ||
+		device->evaluateInteger("GBCC", &cycleCount) == kIOReturnSuccess ||
+		device->evaluateInteger("B1CC", &cycleCount) == kIOReturnSuccess) {
+		if (cycleCount != BatteryInfo::ValueUnknown) {
+			bi.cycle = cycleCount;
+		}
+	}
+
+	if (bi.cycle == BatteryInfo::ValueUnknown) {
+		if (!extended) {
+			// Fallback to estimation based on wear if no real value found
+			if (bi.designCapacity && bi.state.lastFullChargeCapacity)
+				bi.cycle = (bi.designCapacity - bi.state.lastFullChargeCapacity) * 1000 / bi.designCapacity;
+			else
+				bi.cycle = 0;
+		}
 	}
 
 	return true;
@@ -292,6 +305,19 @@ bool ACPIBattery::updateRealTimeStatus(bool quickPoll) {
 	if (st.powerUnitIsWatt) {
 		st.presentRate = st.presentRate * 1000 / st.designVoltage;
 		st.remainingCapacity = st.remainingCapacity * 1000 / st.designVoltage;
+	}
+
+	// Capacity smoothing filter
+	if (st.remainingCapacity != BatteryInfo::ValueUnknown && st.remainingCapacity > 0) {
+		capacityBuffer[capacityBufferIndex] = st.remainingCapacity;
+		capacityBufferIndex = (capacityBufferIndex + 1) % CapacityFilterWindow;
+		if (capacityBufferCount < CapacityFilterWindow) capacityBufferCount++;
+
+		uint64_t capacitySum = 0;
+		for (uint8_t i = 0; i < capacityBufferCount; i++) {
+			capacitySum += capacityBuffer[i];
+		}
+		st.remainingCapacity = static_cast<uint32_t>(capacitySum / capacityBufferCount);
 	}
 
 	// Sometimes this value can be either reported incorrectly or miscalculated

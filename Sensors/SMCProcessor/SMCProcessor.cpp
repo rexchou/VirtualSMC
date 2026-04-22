@@ -296,8 +296,10 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 	}
 
 	if (counters.eventFlags & Counters::PowerTotal) {
+		VirtualSMCAPI::addKey(KeyPCP0, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp96, new CpEnergyKey(this, Counters::EnergyTotalIdx)));
 		VirtualSMCAPI::addKey(KeyPCPR, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp96, new CpEnergyKey(this, Counters::EnergyTotalIdx)));
 		VirtualSMCAPI::addKey(KeyPCPT, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp96, new CpEnergyKey(this, Counters::EnergyTotalIdx)));
+		VirtualSMCAPI::addKey(KeyPSTR, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp96, new CpEnergyKey(this, Counters::EnergyTotalIdx)));
 		VirtualSMCAPI::addKey(KeyPCTR, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp96, new CpEnergyKey(this, Counters::EnergyTotalIdx)));
 	}
 
@@ -338,6 +340,7 @@ void SMCProcessor::setupKeys(size_t coreOffset) {
 				VirtualSMCAPI::addKey(KeyTCGC, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempUncore(this, pkg)));
 			else if (counters.eventFlags & Counters::ThermalPackage)
 				VirtualSMCAPI::addKey(KeyTCGC, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempPackage(this, pkg)));
+			VirtualSMCAPI::addKey(KeyTCMX, vsmcPlugin.data, VirtualSMCAPI::valueWithSp(0, SmcKeyTypeSp78, new TempMax(this, pkg)));
 		}
 
 		if (counters.eventFlags & Counters::Voltage)
