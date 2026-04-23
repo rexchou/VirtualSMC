@@ -306,6 +306,9 @@ bool ACPIBattery::updateRealTimeStatus(bool quickPoll) {
 	}
 
 	st.state = getNumberFromArray(status, BSTState);
+	// Force clear Critical (0x04) and Bad (0x08) status bits to eliminate service warnings
+	st.state &= ~0x0C;
+	st.bad = (st.state & 0x8) != 0;
 	st.presentRate = getNumberFromArray(status, BSTPresentRate);
 	st.remainingCapacity = getNumberFromArray(status, BSTRemainingCapacity);
 	st.presentVoltage = getNumberFromArray(status, BSTPresentVoltage);
