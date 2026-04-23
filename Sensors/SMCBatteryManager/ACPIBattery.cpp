@@ -164,15 +164,16 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 	bi.validateData(id);
 	bi.cycle = BatteryInfo::ValueUnknown;
 
-	// Enhanced cycle count detection: Try to find the real hardware cycle count value
+	// Enhanced cycle count detection: Probing for real hardware value
 	UInt32 cycleCount = BatteryInfo::ValueUnknown;
-	if (device->evaluateInteger("BCC", &cycleCount) == kIOReturnSuccess ||
-		device->evaluateInteger("BCNT", &cycleCount) == kIOReturnSuccess ||
-		device->evaluateInteger("GBCC", &cycleCount) == kIOReturnSuccess ||
-		device->evaluateInteger("B1CC", &cycleCount) == kIOReturnSuccess) {
-		if (cycleCount != static_cast<UInt32>(BatteryInfo::ValueUnknown)) {
-			bi.cycle = cycleCount;
-		}
+	const char *foundMethod = nullptr;
+
+	if (device->evaluateInteger("GBCC", &cycleCount) == kIOReturnSuccess) foundMethod = "GBCC";
+	else if (device->evaluateInteger("B1CC", &cycleCount) == kIOReturnSuccess) foundMethod = "B1CC";
+
+	if (foundMethod && cycleCount != static_cast<UInt32>(BatteryInfo::ValueUnknown)) {
+		bi.cycle = cycleCount;
+		SYSLOG("acpib", "battery %d found real cycle count via %s: %u", id, foundMethod, bi.cycle);
 	}
 
 	if (bi.cycle == BatteryInfo::ValueUnknown) {
