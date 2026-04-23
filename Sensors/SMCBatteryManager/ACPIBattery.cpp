@@ -176,17 +176,14 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 		SYSLOG("acpib", "found real cycle count via %s: %u", foundMethod, (unsigned int)bi.cycle);
 	}
 
-	// Battery Health Fix (Plan A+++): Double capacity and set to a realistic 95% health
-	if (bi.state.lastFullChargeCapacity > 0) {
-		// Double the capacities
-		bi.state.lastFullChargeCapacity *= 2;
-		// Set Design Capacity to be slightly higher (approx 95% health)
-		bi.designCapacity = bi.state.lastFullChargeCapacity * 100 / 95;
+	// Battery Health Fix (Plan B): Use REAL capacity but force 100% health
+	if (bi.state.lastFullChargeCapacity > 0 && bi.designCapacity > bi.state.lastFullChargeCapacity) {
+		bi.designCapacity = bi.state.lastFullChargeCapacity;
 	}
 
-	// Fake a longer serial to bypass potential OS cache
+	// Keep the serial change for now to ensure cache refresh
 	size_t len = strlen(bi.serial);
-	if (len > 0 && len < BatteryInfo::MaxStringLen - 1) {
+	if (len > 0 && len < BatteryInfo::MaxStringLen - 1 && bi.serial[len-1] != 'A') {
 		bi.serial[len] = 'A';
 		bi.serial[len+1] = '\0';
 	}
@@ -320,8 +317,8 @@ bool ACPIBattery::updateRealTimeStatus(bool quickPoll) {
 	st.state &= 0x03; 
 	st.bad = false;
 	st.critical = false;
-	st.presentRate = getNumberFromArray(status, BSTPresentRate) * 2;
-	st.remainingCapacity = getNumberFromArray(status, BSTRemainingCapacity) * 2;
+	st.presentRate = getNumberFromArray(status, BSTPresentRate);
+	st.remainingCapacity = getNumberFromArray(status, BSTRemainingCapacity);
 	st.presentVoltage = getNumberFromArray(status, BSTPresentVoltage);
 	if (st.powerUnitIsWatt) {
 		st.presentRate = st.presentRate * 1000 / st.designVoltage;
