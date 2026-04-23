@@ -173,7 +173,7 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 
 	if (foundMethod && cycleCount != static_cast<UInt32>(BatteryInfo::ValueUnknown)) {
 		bi.cycle = cycleCount;
-		SYSLOG("acpib", "battery %d found real cycle count via %s: %u", id, foundMethod, bi.cycle);
+		IOLog("SMCBatteryManager: battery %d found real cycle count via %s: %u\n", id, foundMethod, (unsigned int)bi.cycle);
 	}
 
 	if (bi.cycle == BatteryInfo::ValueUnknown) {
