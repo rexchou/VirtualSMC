@@ -176,9 +176,11 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 		SYSLOG("acpib", "found real cycle count via %s: %u", foundMethod, (unsigned int)bi.cycle);
 	}
 
-	// Battery Health Fix (Plan A+): Force 100% health to eliminate "Service Recommended"
-	if (bi.state.lastFullChargeCapacity > 0 && bi.designCapacity > bi.state.lastFullChargeCapacity) {
-		bi.designCapacity = bi.state.lastFullChargeCapacity;
+	// Battery Health Fix (Plan A++): Double everything and force 100% health
+	if (bi.state.lastFullChargeCapacity > 0) {
+		// Double the base capacities
+		bi.designCapacity = bi.state.lastFullChargeCapacity * 2;
+		bi.state.lastFullChargeCapacity *= 2;
 	}
 
 	if (bi.cycle == BatteryInfo::ValueUnknown) {
@@ -309,8 +311,8 @@ bool ACPIBattery::updateRealTimeStatus(bool quickPoll) {
 	// Force clear Critical (0x04) and Bad (0x08) status bits to eliminate service warnings
 	st.state &= ~0x0C;
 	st.bad = (st.state & 0x8) != 0;
-	st.presentRate = getNumberFromArray(status, BSTPresentRate);
-	st.remainingCapacity = getNumberFromArray(status, BSTRemainingCapacity);
+	st.presentRate = getNumberFromArray(status, BSTPresentRate) * 2;
+	st.remainingCapacity = getNumberFromArray(status, BSTRemainingCapacity) * 2;
 	st.presentVoltage = getNumberFromArray(status, BSTPresentVoltage);
 	if (st.powerUnitIsWatt) {
 		st.presentRate = st.presentRate * 1000 / st.designVoltage;
