@@ -179,8 +179,8 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 	// Battery Health Fix (Plan A): Eliminate "Service Recommended"
 	// If the battery is healthy enough to be used, but macOS reports service due to wear,
 	// we cap the Design Capacity to roughly 1.1x of Full Charge Capacity (approx 90% health).
-	if (bi.state.lastFullChargeCapacity > 0 && bi.state.designCapacity > bi.state.lastFullChargeCapacity * 11 / 10) {
-		bi.state.designCapacity = bi.state.lastFullChargeCapacity * 11 / 10;
+	if (bi.state.lastFullChargeCapacity > 0 && bi.designCapacity > bi.state.lastFullChargeCapacity * 11 / 10) {
+		bi.designCapacity = bi.state.lastFullChargeCapacity * 11 / 10;
 	}
 
 	if (bi.cycle == BatteryInfo::ValueUnknown) {
