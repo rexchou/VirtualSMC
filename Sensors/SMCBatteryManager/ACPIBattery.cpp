@@ -164,12 +164,12 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 	bi.validateData(id);
 
 	// Enhanced cycle count detection: Try to find the real hardware cycle count value
-	uint32_t cycleCount = BatteryInfo::ValueUnknown;
+	UInt32 cycleCount = BatteryInfo::ValueUnknown;
 	if (device->evaluateInteger("BCC", &cycleCount) == kIOReturnSuccess ||
 		device->evaluateInteger("BCNT", &cycleCount) == kIOReturnSuccess ||
 		device->evaluateInteger("GBCC", &cycleCount) == kIOReturnSuccess ||
 		device->evaluateInteger("B1CC", &cycleCount) == kIOReturnSuccess) {
-		if (cycleCount != BatteryInfo::ValueUnknown) {
+		if (cycleCount != static_cast<UInt32>(BatteryInfo::ValueUnknown)) {
 			bi.cycle = cycleCount;
 		}
 	}
@@ -460,7 +460,7 @@ bool ACPIBattery::updateStaticStatus(bool *calculatedACAdapterConnection) {
 
 	UInt32 acpi = 0;
 	if (device->evaluateInteger(AcpiStatus, &acpi) == kIOReturnSuccess) {
-		DBGLOG("acpib", "return status %x", acpi);
+		DBGLOG("acpib", "return status %x", static_cast<unsigned int>(acpi));
 
 		bool connected = (acpi & 0x10) ? true : false;
 		IOSimpleLockLock(batteryInfoLock);
