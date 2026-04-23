@@ -162,6 +162,7 @@ bool ACPIBattery::getBatteryInfo(BatteryInfo &bi, bool extended) {
 	DBGLOG("acpib", "supplement config %x", supplementConfig);
 
 	bi.validateData(id);
+	bi.cycle = BatteryInfo::ValueUnknown;
 
 	// Enhanced cycle count detection: Try to find the real hardware cycle count value
 	UInt32 cycleCount = BatteryInfo::ValueUnknown;

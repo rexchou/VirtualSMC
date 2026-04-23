@@ -250,7 +250,7 @@ private:
 	 *  Capacity smoothing buffer
 	 */
 	static constexpr uint8_t CapacityFilterWindow = 4;
-	uint32_t capacityBuffer[CapacityFilterWindow] {};
+	uint32_t capacityBuffer[CapacityFilterWindow] {0};
 	uint8_t capacityBufferIndex {0};
 	uint8_t capacityBufferCount {0};
 };
